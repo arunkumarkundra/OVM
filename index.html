@@ -272,30 +272,41 @@
             color: #e53e3e;
         }
 
-        .message-section {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        .career-insights {
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
             color: white;
             padding: 25px;
             border-radius: 15px;
-            text-align: center;
             margin-bottom: 30px;
         }
 
-        .message-section textarea {
-            width: 100%;
-            min-height: 100px;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 10px;
+        .career-insights h3 {
             color: white;
-            padding: 15px;
-            margin-top: 15px;
-            resize: vertical;
-            font-family: inherit;
+            margin-bottom: 20px;
+            font-size: 1.4rem;
         }
 
-        .message-section textarea::placeholder {
-            color: rgba(255, 255, 255, 0.7);
+        .career-section {
+            margin-bottom: 20px;
+        }
+
+        .career-section h4 {
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+        }
+
+        .career-section ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .career-section li {
+            background: rgba(255, 255, 255, 0.1);
+            margin: 8px 0;
+            padding: 10px 15px;
+            border-radius: 8px;
+            border-left: 3px solid rgba(255, 255, 255, 0.3);
         }
 
         .export-buttons {
@@ -428,8 +439,13 @@
                     <div id="optimization-drivers"></div>
                 </div>
 
+                <div class="career-insights">
+                    <h3>🎯 Career & Professional Insights</h3>
+                    <div id="career-content"></div>
+                </div>
+
                 <div class="result-section">
-                    <h3>Life & Career Insights</h3>
+                    <h3>Life & Development Insights</h3>
                     <div class="recommendations">
                         <div class="rec-column">
                             <h4>✓ Strengths & Opportunities</h4>
@@ -440,12 +456,6 @@
                             <ul id="recommendations-blindspots"></ul>
                         </div>
                     </div>
-                </div>
-
-                <div class="message-section">
-                    <h3>Your Personal Message</h3>
-                    <p>Add your own thoughts or goals based on these insights:</p>
-                    <textarea id="personal-message" placeholder="e.g., 'Based on my results, I want to focus more on...' or 'This explains why I feel energized when...'"></textarea>
                 </div>
 
                 <div class="result-section">
@@ -465,202 +475,257 @@
     </div>
 
     <script>
-        // OVM Questions (25 forced-choice pairs)
+        // Improved OVM Questions (25 forced-choice pairs) - More precise and clearer distinctions
         const questions = [
             {
-                question: "Would you rather:",
-                optionA: { text: "Be completely free to live life on your own terms", driver: "Control" },
-                optionB: { text: "Be surrounded by people who love and support you", driver: "Belonging" }
+                question: "When making major life decisions, what matters more:",
+                optionA: { text: "Having complete freedom to choose without external constraints", driver: "Control" },
+                optionB: { text: "Being part of a close-knit community or family network", driver: "Belonging" }
             },
             {
-                question: "Would you rather:",
-                optionA: { text: "Be known as highly successful and admired", driver: "Status" },
-                optionB: { text: "Make a lasting difference in the world", driver: "Purpose" }
+                question: "What would bring you more satisfaction:",
+                optionA: { text: "Being recognized as highly accomplished in your field", driver: "Status" },
+                optionB: { text: "Contributing to a cause that makes the world better", driver: "Purpose" }
             },
             {
-                question: "Would you rather:",
-                optionA: { text: "Constantly exploring new ideas and skills", driver: "Growth" },
-                optionB: { text: "Having a stable, predictable life", driver: "Control" }
+                question: "Which scenario appeals to you more:",
+                optionA: { text: "A life filled with new challenges and learning opportunities", driver: "Growth" },
+                optionB: { text: "A life with security, stability, and predictable outcomes", driver: "Control" }
             },
             {
-                question: "Would you rather:",
-                optionA: { text: "Being admired and respected by others", driver: "Status" },
-                optionB: { text: "Having deep, reliable personal relationships", driver: "Belonging" }
-            },
-            {
-                question: "Would you rather:",
-                optionA: { text: "Discovering new knowledge and experiences", driver: "Growth" },
-                optionB: { text: "Devoting myself to a cause I believe in", driver: "Purpose" }
-            },
-            {
-                question: "In making life choices, what matters more:",
-                optionA: { text: "Having complete independence in decisions", driver: "Control" },
-                optionB: { text: "Never being lonely or isolated", driver: "Belonging" }
-            },
-            {
-                question: "In making life choices, what matters more:",
-                optionA: { text: "Outperforming peers and gaining recognition", driver: "Status" },
-                optionB: { text: "Living in line with my values and ideals", driver: "Purpose" }
-            },
-            {
-                question: "In making life choices, what matters more:",
-                optionA: { text: "Seeking challenges that push me beyond comfort", driver: "Growth" },
-                optionB: { text: "Reducing risks and maintaining security", driver: "Control" }
-            },
-            {
-                question: "In making life choices, what matters more:",
-                optionA: { text: "Standing out as exceptional", driver: "Status" },
-                optionB: { text: "Being embraced as 'one of us'", driver: "Belonging" }
-            },
-            {
-                question: "In making life choices, what matters more:",
-                optionA: { text: "Pursuing mastery for its own sake", driver: "Growth" },
-                optionB: { text: "Living for something larger than myself", driver: "Purpose" }
-            },
-            {
-                question: "What drives you more:",
-                optionA: { text: "Avoiding constraints or rules from others", driver: "Control" },
-                optionB: { text: "Being accepted as part of a close group", driver: "Belonging" }
-            },
-            {
-                question: "What drives you more:",
-                optionA: { text: "Earning high prestige and influence", driver: "Status" },
-                optionB: { text: "Staying true to my principles, even if unnoticed", driver: "Purpose" }
-            },
-            {
-                question: "What drives you more:",
-                optionA: { text: "Feeling restless if life becomes repetitive", driver: "Growth" },
-                optionB: { text: "Feeling safe when life is orderly and planned", driver: "Control" }
-            },
-            {
-                question: "What drives you more:",
-                optionA: { text: "Winning recognition from society", driver: "Status" },
-                optionB: { text: "Building warm, lasting friendships", driver: "Belonging" }
-            },
-            {
-                question: "What drives you more:",
-                optionA: { text: "Thriving on novelty and exploration", driver: "Growth" },
-                optionB: { text: "Thriving on moral or spiritual fulfillment", driver: "Purpose" }
+                question: "What drives you more strongly:",
+                optionA: { text: "Earning respect and admiration from peers", driver: "Status" },
+                optionB: { text: "Building warm, trusting relationships with others", driver: "Belonging" }
             },
             {
                 question: "Which is more important to you:",
-                optionA: { text: "Having control over every major decision in my life", driver: "Control" },
-                optionB: { text: "Gaining recognition and high social standing", driver: "Status" }
+                optionA: { text: "Continuously expanding your skills and knowledge", driver: "Growth" },
+                optionB: { text: "Living according to your deeply held values and beliefs", driver: "Purpose" }
             },
             {
-                question: "Which is more important to you:",
-                optionA: { text: "Belonging to a warm, supportive community", driver: "Belonging" },
-                optionB: { text: "Expanding my knowledge and skills throughout life", driver: "Growth" }
+                question: "What would feel worse to you:",
+                optionA: { text: "Being micromanaged or controlled by others", driver: "Control" },
+                optionB: { text: "Feeling isolated or disconnected from your social circle", driver: "Belonging" }
             },
             {
-                question: "Which is more important to you:",
-                optionA: { text: "Living in freedom without external limits", driver: "Control" },
-                optionB: { text: "Living in service of a higher moral calling", driver: "Purpose" }
+                question: "Which achievement would mean more:",
+                optionA: { text: "Winning a prestigious award or public recognition", driver: "Status" },
+                optionB: { text: "Knowing your work serves a meaningful, higher purpose", driver: "Purpose" }
             },
             {
-                question: "Which is more important to you:",
-                optionA: { text: "Becoming widely respected and influential", driver: "Status" },
-                optionB: { text: "Continuously exploring and learning new things", driver: "Growth" }
+                question: "What motivates you more:",
+                optionA: { text: "Taking on projects that stretch your capabilities", driver: "Growth" },
+                optionB: { text: "Having full autonomy over your work and decisions", driver: "Control" }
             },
             {
-                question: "Which is more important to you:",
-                optionA: { text: "Building strong, enduring family bonds", driver: "Belonging" },
-                optionB: { text: "Contributing to a mission bigger than myself", driver: "Purpose" }
+                question: "Which matters more in your professional life:",
+                optionA: { text: "Being seen as a leader or high performer", driver: "Status" },
+                optionB: { text: "Having colleagues you genuinely care about and trust", driver: "Belonging" }
             },
             {
-                question: "What motivates you most:",
-                optionA: { text: "Protecting my independence at all costs", driver: "Control" },
-                optionB: { text: "Staying deeply connected to people I love", driver: "Belonging" }
+                question: "What would you choose:",
+                optionA: { text: "A role that constantly challenges you to learn new things", driver: "Growth" },
+                optionB: { text: "A role that aligns perfectly with your personal mission", driver: "Purpose" }
             },
             {
-                question: "What motivates you most:",
-                optionA: { text: "Being honored for my achievements", driver: "Status" },
-                optionB: { text: "Staying faithful to my deepest principles", driver: "Purpose" }
+                question: "Which statement resonates more with you:",
+                optionA: { text: "I need the freedom to make my own choices", driver: "Control" },
+                optionB: { text: "I need to feel accepted and valued by my community", driver: "Belonging" }
             },
             {
-                question: "What motivates you most:",
-                optionA: { text: "Embracing uncertainty to grow and explore", driver: "Growth" },
-                optionB: { text: "Preferring predictability and safety", driver: "Control" }
+                question: "What brings you more fulfillment:",
+                optionA: { text: "Achieving recognition for outstanding performance", driver: "Status" },
+                optionB: { text: "Making sacrifices for something you believe in", driver: "Purpose" }
             },
             {
-                question: "What motivates you most:",
-                optionA: { text: "Earning admiration from others", driver: "Status" },
-                optionB: { text: "Being accepted and cared for as I am", driver: "Belonging" }
+                question: "Which work environment suits you better:",
+                optionA: { text: "Dynamic environments with constant change and innovation", driver: "Growth" },
+                optionB: { text: "Stable environments where you can work independently", driver: "Control" }
             },
             {
-                question: "What motivates you most:",
-                optionA: { text: "Advancing knowledge and discovery", driver: "Growth" },
-                optionB: { text: "Living a life of devotion and service", driver: "Purpose" }
+                question: "What's more important in your career:",
+                optionA: { text: "Climbing to positions of influence and prestige", driver: "Status" },
+                optionB: { text: "Working alongside people who feel like family", driver: "Belonging" }
+            },
+            {
+                question: "Which approach to life appeals to you more:",
+                optionA: { text: "Constantly seeking new experiences and personal development", driver: "Growth" },
+                optionB: { text: "Dedicating yourself to serving others or a greater cause", driver: "Purpose" }
+            },
+            {
+                question: "In your ideal life, what matters most:",
+                optionA: { text: "Being able to live completely on your own terms", driver: "Control" },
+                optionB: { text: "Being distinguished for your achievements and success", driver: "Status" }
+            },
+            {
+                question: "What would you prioritize:",
+                optionA: { text: "Building strong bonds with family and close friends", driver: "Belonging" },
+                optionB: { text: "Pursuing mastery and expertise in areas that fascinate you", driver: "Growth" }
+            },
+            {
+                question: "Which scenario would you prefer:",
+                optionA: { text: "Complete independence, even if it means more uncertainty", driver: "Control" },
+                optionB: { text: "A life dedicated to values and principles that guide you", driver: "Purpose" }
+            },
+            {
+                question: "What drives your ambition more:",
+                optionA: { text: "The desire to be exceptional and stand out from others", driver: "Status" },
+                optionB: { text: "The excitement of tackling complex, challenging problems", driver: "Growth" }
+            },
+            {
+                question: "Which is more central to your identity:",
+                optionA: { text: "The relationships and community connections you've built", driver: "Belonging" },
+                optionB: { text: "The principles and ideals you stand for", driver: "Purpose" }
+            },
+            {
+                question: "What would make you feel most successful:",
+                optionA: { text: "Having complete control over your life's direction", driver: "Control" },
+                optionB: { text: "Feeling deeply connected to those you care about most", driver: "Belonging" }
+            },
+            {
+                question: "Which type of recognition matters more:",
+                optionA: { text: "Public acknowledgment of your superior achievements", driver: "Status" },
+                optionB: { text: "Knowing you've stayed true to your moral compass", driver: "Purpose" }
+            },
+            {
+                question: "What energizes you more:",
+                optionA: { text: "Discovering new possibilities and pushing boundaries", driver: "Growth" },
+                optionB: { text: "Having the power to make decisions without interference", driver: "Control" }
+            },
+            {
+                question: "In your professional relationships, what's more important:",
+                optionA: { text: "Being respected as someone who achieves results", driver: "Status" },
+                optionB: { text: "Being trusted as someone who genuinely cares", driver: "Belonging" }
+            },
+            {
+                question: "What legacy would you prefer to leave:",
+                optionA: { text: "Being remembered as someone who never stopped learning and growing", driver: "Growth" },
+                optionB: { text: "Being remembered as someone who made a meaningful difference", driver: "Purpose" }
             }
         ];
 
-        // Archetype Definitions
+        // Enhanced Archetype Definitions with detailed career insights
         const archetypes = {
             "Control": {
                 name: "The Maverick",
                 description: "You optimize for freedom, autonomy, and independence. You want to shape your own path without being constrained by rules, institutions, or expectations.",
                 strengths: ["Independent thinking", "Risk-taking courage", "Entrepreneurial spirit", "Adaptability", "Self-reliance"],
-                blindSpots: ["May resist collaboration", "Can struggle with structure", "Risk of isolation", "Difficulty with authority", "May avoid long-term commitments"]
+                blindSpots: ["May resist collaboration", "Can struggle with structure", "Risk of isolation", "Difficulty with authority", "May avoid long-term commitments"],
+                careers: {
+                    ideal: ["Entrepreneur", "Consultant", "Freelancer", "Creative Professional", "Sales Representative", "Real Estate Agent"],
+                    workEnvironment: ["Remote work", "Flexible schedules", "Project-based roles", "Minimal supervision"],
+                    avoid: ["Highly regulated industries", "Micromanagement", "Rigid corporate hierarchies", "Routine administrative work"]
+                }
             },
             "Growth": {
                 name: "The Explorer",
                 description: "You optimize for learning, mastery, and novelty. You thrive on curiosity and the pursuit of new challenges and experiences.",
                 strengths: ["Creative innovation", "Quick learning", "Adaptability", "Future orientation", "Inspiring curiosity"],
-                blindSpots: ["May lack focus", "Restlessness with routine", "Can neglect practical needs", "Difficulty with completion", "Risk of overwhelming others"]
+                blindSpots: ["May lack focus", "Restlessness with routine", "Can neglect practical needs", "Difficulty with completion", "Risk of overwhelming others"],
+                careers: {
+                    ideal: ["Research Scientist", "Product Manager", "UX Designer", "Startup Founder", "Management Consultant", "Learning & Development"],
+                    workEnvironment: ["Innovation labs", "Cross-functional teams", "Continuous learning opportunities", "Variety in projects"],
+                    avoid: ["Repetitive tasks", "Static roles", "Industries resistant to change", "Micromanagement of methods"]
+                }
             },
             "Status": {
                 name: "The Achiever",
                 description: "You optimize for recognition, prestige, and competitive success. You're motivated by proving yourself and standing out from others.",
                 strengths: ["High ambition", "Results orientation", "Competitive drive", "Leadership potential", "Goal achievement"],
-                blindSpots: ["External validation dependence", "Burnout risk", "May neglect relationships", "Comparison trap", "Stress under pressure"]
+                blindSpots: ["External validation dependence", "Burnout risk", "May neglect relationships", "Comparison trap", "Stress under pressure"],
+                careers: {
+                    ideal: ["Executive Leadership", "Investment Banking", "Corporate Law", "Sales Director", "Management Consulting", "Elite Professional Services"],
+                    workEnvironment: ["Clear advancement paths", "Performance-based rewards", "Competitive settings", "High-visibility projects"],
+                    avoid: ["Non-profit without growth potential", "Behind-the-scenes roles", "Flat organizational structures", "Unclear success metrics"]
+                }
             },
             "Belonging": {
                 name: "The Connector",
                 description: "You optimize for relationships, intimacy, and community. You thrive when you feel bonded with others and part of something social.",
                 strengths: ["Deep empathy", "Loyalty", "Emotional intelligence", "Harmony creation", "Supportive nature"],
-                blindSpots: ["May sacrifice independence", "Conflict avoidance", "Over-dependence on others", "Difficulty with boundaries", "People-pleasing tendency"]
+                blindSpots: ["May sacrifice independence", "Conflict avoidance", "Over-dependence on others", "Difficulty with boundaries", "People-pleasing tendency"],
+                careers: {
+                    ideal: ["Human Resources", "Counseling/Therapy", "Team Leadership", "Community Management", "Healthcare", "Education"],
+                    workEnvironment: ["Collaborative teams", "Strong company culture", "Mentorship opportunities", "People-focused missions"],
+                    avoid: ["Highly competitive cultures", "Isolated work", "Frequent team changes", "Conflict-heavy environments"]
+                }
             },
             "Purpose": {
                 name: "The Seeker",
                 description: "You optimize for meaning, ideals, and transcendence. You're motivated by living for something larger than yourself and making a meaningful impact.",
                 strengths: ["Strong principles", "Resilience in adversity", "Inspiring vision", "Values-driven decisions", "Long-term perspective"],
-                blindSpots: ["May neglect practical needs", "Risk of rigidity", "Self-sacrifice tendency", "Idealistic expectations", "Difficulty with compromise"]
+                blindSpots: ["May neglect practical needs", "Risk of rigidity", "Self-sacrifice tendency", "Idealistic expectations", "Difficulty with compromise"],
+                careers: {
+                    ideal: ["Non-profit Leadership", "Social Impact", "Sustainable Business", "Ethics & Compliance", "Ministry/Spiritual Leadership", "Public Service"],
+                    workEnvironment: ["Mission-driven organizations", "Values-aligned culture", "Social impact focus", "Ethical business practices"],
+                    avoid: ["Purely profit-driven roles", "Ethically questionable industries", "Short-term focused positions", "Value-conflicting organizations"]
+                }
             },
             "Control+Growth": {
                 name: "The Pioneer",
                 description: "You're independent and driven by discovery. You want freedom to chart your own path and thrive in uncharted territory.",
                 strengths: ["Bold innovation", "Risk-taking", "Independent exploration", "Adaptable leadership", "Creative problem-solving"],
-                blindSpots: ["May resist structure", "Restlessness", "Difficulty with routine", "Can be scattered", "May avoid commitment"]
+                blindSpots: ["May resist structure", "Restlessness", "Difficulty with routine", "Can be scattered", "May avoid commitment"],
+                careers: {
+                    ideal: ["Tech Entrepreneur", "Innovation Consultant", "Research & Development", "Venture Capital", "Creative Director", "Strategic Planning"],
+                    workEnvironment: ["Startup environments", "R&D departments", "Innovation labs", "Project-based work"],
+                    avoid: ["Bureaucratic organizations", "Routine operations", "Strict compliance roles", "Traditional corporate structures"]
+                }
             },
             "Growth+Purpose": {
                 name: "The Visionary",
                 description: "You're an innovator with a mission. You explore not just for curiosity's sake, but to create meaningful impact.",
                 strengths: ["Creative idealism", "Inspiring vision", "Future-oriented", "Values-driven innovation", "Motivating others"],
-                blindSpots: ["Can overcommit", "May neglect practical needs", "Perfectionist tendencies", "Impatience with slow progress", "Risk of burnout"]
+                blindSpots: ["Can overcommit", "May neglect practical needs", "Perfectionist tendencies", "Impatience with slow progress", "Risk of burnout"],
+                careers: {
+                    ideal: ["Social Innovation", "Sustainable Technology", "Educational Technology", "Healthcare Innovation", "Social Enterprise", "Think Tank Research"],
+                    workEnvironment: ["Mission-driven startups", "Impact-focused organizations", "Research institutions", "Progressive companies"],
+                    avoid: ["Purely commercial focus", "Short-term profit maximization", "Ethically neutral industries", "Incremental improvement roles"]
+                }
             },
             "Status+Control": {
                 name: "The Power Broker",
                 description: "You want influence on your own terms. Ambition and autonomy combine into a drive for leadership and authority.",
                 strengths: ["Strategic thinking", "Leadership ambition", "Independent decision-making", "Persuasive ability", "Results focus"],
-                blindSpots: ["Risk of manipulation", "May be controlling", "Workaholic tendencies", "Difficulty trusting others", "Can alienate people"]
+                blindSpots: ["Risk of manipulation", "May be controlling", "Workaholic tendencies", "Difficulty trusting others", "Can alienate people"],
+                careers: {
+                    ideal: ["C-Suite Executive", "Investment Management", "Political Leadership", "Business Owner", "Elite Consulting", "Board Positions"],
+                    workEnvironment: ["Leadership positions", "Decision-making authority", "Strategic roles", "High-stakes environments"],
+                    avoid: ["Middle management", "Committee-based decisions", "Heavily regulated roles", "Supporting functions only"]
+                }
             },
             "Status+Belonging": {
                 name: "The Influencer",
                 description: "You optimize for both admiration and connection. You want to be liked and respected, not just loved or just admired.",
                 strengths: ["Social magnetism", "Network building", "Charismatic leadership", "People skills", "Bridge-building ability"],
-                blindSpots: ["Image management pressure", "People-pleasing", "Authenticity challenges", "Fear of rejection", "May compromise values"]
+                blindSpots: ["Image management pressure", "People-pleasing", "Authenticity challenges", "Fear of rejection", "May compromise values"],
+                careers: {
+                    ideal: ["Sales Leadership", "Public Relations", "Politics", "Media & Entertainment", "Corporate Communications", "Business Development"],
+                    workEnvironment: ["People-facing roles", "Network-building opportunities", "Team leadership", "External relationship management"],
+                    avoid: ["Behind-the-scenes work", "Technical specialization", "Conflict-heavy roles", "Isolated positions"]
+                }
             },
             "Belonging+Purpose": {
                 name: "The Caregiver",
                 description: "You live to nurture and serve. Relationships are infused with a sense of mission, and service feels like destiny.",
                 strengths: ["Deep compassion", "Service orientation", "Loyalty", "Empathy", "Community building"],
-                blindSpots: ["Self-neglect", "Burnout risk", "Boundary issues", "Difficulty saying no", "May enable others"]
+                blindSpots: ["Self-neglect", "Burnout risk", "Boundary issues", "Difficulty saying no", "May enable others"],
+                careers: {
+                    ideal: ["Healthcare", "Social Work", "Non-profit Management", "Teaching", "Ministry", "Human Services"],
+                    workEnvironment: ["Service-oriented missions", "Supportive teams", "People-helping focus", "Community impact"],
+                    avoid: ["Profit-maximizing roles", "Competitive environments", "Individual contributor roles", "Conflict-driven positions"]
+                }
             },
             "Balanced": {
                 name: "The Integrator",
                 description: "You show balance across multiple optimization drivers. You're flexible and can adapt your focus based on context and needs.",
                 strengths: ["Flexibility", "Balanced perspective", "Adaptability", "Well-rounded approach", "Context sensitivity"],
-                blindSpots: ["May lack clear direction", "Decision paralysis risk", "Less intense drive", "May seem unfocused", "Identity uncertainty"]
+                blindSpots: ["May lack clear direction", "Decision paralysis risk", "Less intense drive", "May seem unfocused", "Identity uncertainty"],
+                careers: {
+                    ideal: ["General Management", "Project Management", "Operations", "HR Leadership", "Strategy & Planning", "Organizational Development"],
+                    workEnvironment: ["Diverse responsibilities", "Cross-functional roles", "Balanced organizations", "Varied projects"],
+                    avoid: ["Highly specialized roles", "Single-focus positions", "Extreme cultures", "One-dimensional work"]
+                }
             }
         };
 
@@ -734,7 +799,7 @@
             animateResults();
         }
 
-        // Calculate Final Results
+        // Improved algorithm for calculating final results
         function calculateResults() {
             // Convert scores to percentages
             const totalQuestions = questions.length;
@@ -743,44 +808,63 @@
                 percentageScores[driver] = Math.round((score / totalQuestions) * 100);
             }
 
-            // Determine archetype
+            // Determine archetype with improved logic
             const sortedDrivers = Object.entries(percentageScores).sort((a, b) => b[1] - a[1]);
             const topDriver = sortedDrivers[0];
             const secondDriver = sortedDrivers[1];
+            const thirdDriver = sortedDrivers[2];
 
             let archetype;
-            if (topDriver[1] >= secondDriver[1] + 15) {
-                // Single dominant
-                archetype = topDriver[0];
-            } else if (topDriver[1] >= 30 && secondDriver[1] >= 30 && topDriver[1] - secondDriver[1] <= 10) {
-                // Hybrid
+            let isHybrid = false;
+
+            // Check for true hybrid (two drivers within 8% and both above 25%)
+            if (topDriver[1] - secondDriver[1] <= 8 && topDriver[1] >= 25 && secondDriver[1] >= 25) {
                 const hybridKey = [topDriver[0], secondDriver[0]].sort().join('+');
-                const hybridKeyReverse = [secondDriver[0], topDriver[0]].sort().join('+');
-                archetype = archetypes[hybridKey] ? hybridKey : hybridKeyReverse;
-                if (!archetypes[archetype]) {
+                if (archetypes[hybridKey]) {
+                    archetype = hybridKey;
+                    isHybrid = true;
+                } else {
+                    // If hybrid doesn't exist, create dynamic hybrid description
                     archetype = topDriver[0] + '+' + secondDriver[0];
+                    isHybrid = true;
                 }
-            } else {
-                // Balanced or default to top
+            } 
+            // Check for balanced profile (all within 15% range)
+            else {
                 const maxScore = Math.max(...Object.values(percentageScores));
                 const minScore = Math.min(...Object.values(percentageScores));
                 if (maxScore - minScore <= 15) {
                     archetype = "Balanced";
                 } else {
+                    // Single dominant archetype
                     archetype = topDriver[0];
                 }
             }
 
+            // Handle dynamic hybrid creation if archetype doesn't exist
+            let archetypeData;
+            if (archetypes[archetype]) {
+                archetypeData = archetypes[archetype];
+            } else if (isHybrid) {
+                // Create dynamic hybrid
+                archetypeData = createDynamicHybrid(topDriver[0], secondDriver[0]);
+            } else {
+                // Fallback to top driver
+                archetypeData = archetypes[topDriver[0]];
+            }
+
             // Display results
-            const archetypeData = archetypes[archetype] || archetypes[topDriver[0]];
             document.getElementById('archetype-type').textContent = archetypeData.name;
             document.getElementById('archetype-description').textContent = archetypeData.description;
             
             // Generate analysis
-            generateVectorAnalysis(percentageScores, archetype);
+            generateVectorAnalysis(percentageScores, archetype, topDriver, secondDriver, thirdDriver);
             
             // Display optimization drivers
             displayOptimizationDrivers(percentageScores);
+            
+            // Display career insights
+            displayCareerInsights(archetypeData, percentageScores);
             
             // Display recommendations
             displayRecommendations(archetypeData);
@@ -790,40 +874,75 @@
                 archetype: archetypeData.name,
                 archetypeDescription: archetypeData.description,
                 percentageScores,
-                vectorAnalysis: generateVectorAnalysisText(percentageScores, archetype),
+                vectorAnalysis: generateVectorAnalysisText(percentageScores, archetype, topDriver, secondDriver, thirdDriver),
                 strengths: archetypeData.strengths,
-                blindSpots: archetypeData.blindSpots
+                blindSpots: archetypeData.blindSpots,
+                careerInsights: archetypeData.careers
             };
         }
 
+        // Create dynamic hybrid archetype
+        function createDynamicHybrid(driver1, driver2) {
+            const driverNames = {
+                Control: "Maverick",
+                Growth: "Explorer", 
+                Status: "Achiever",
+                Belonging: "Connector",
+                Purpose: "Seeker"
+            };
+
+            const base1 = archetypes[driver1];
+            const base2 = archetypes[driver2];
+
+            return {
+                name: `The ${driverNames[driver1]}-${driverNames[driver2]}`,
+                description: `You optimize for both ${driver1.toLowerCase()} and ${driver2.toLowerCase()}. This creates a unique blend where you seek ${getDriverDescription(driver1)} while also prioritizing ${getDriverDescription(driver2)}.`,
+                strengths: [...base1.strengths.slice(0, 3), ...base2.strengths.slice(0, 2)],
+                blindSpots: [...base1.blindSpots.slice(0, 3), ...base2.blindSpots.slice(0, 2)],
+                careers: {
+                    ideal: [...base1.careers.ideal.slice(0, 3), ...base2.careers.ideal.slice(0, 3)],
+                    workEnvironment: [...base1.careers.workEnvironment.slice(0, 2), ...base2.careers.workEnvironment.slice(0, 2)],
+                    avoid: [...base1.careers.avoid.slice(0, 2), ...base2.careers.avoid.slice(0, 2)]
+                }
+            };
+        }
+
+        function getDriverDescription(driver) {
+            const descriptions = {
+                Control: "autonomy and independence",
+                Growth: "learning and exploration", 
+                Status: "recognition and achievement",
+                Belonging: "relationships and community",
+                Purpose: "meaning and values"
+            };
+            return descriptions[driver];
+        }
+
         // Generate Vector Analysis
-        function generateVectorAnalysis(percentageScores, archetype) {
-            const analysis = generateVectorAnalysisText(percentageScores, archetype);
+        function generateVectorAnalysis(percentageScores, archetype, topDriver, secondDriver, thirdDriver) {
+            const analysis = generateVectorAnalysisText(percentageScores, archetype, topDriver, secondDriver, thirdDriver);
             document.getElementById('vector-analysis').textContent = analysis;
         }
 
         // Generate Vector Analysis Text
-        function generateVectorAnalysisText(percentageScores, archetype) {
-            const sortedDrivers = Object.entries(percentageScores).sort((a, b) => b[1] - a[1]);
-            const topDriver = sortedDrivers[0];
-            const secondDriver = sortedDrivers[1];
-            const lowestDriver = sortedDrivers[4];
-
-            let analysis = `Your optimization profile shows ${topDriver[0]} as your primary driver (${topDriver[1]}%), `;
+        function generateVectorAnalysisText(percentageScores, archetype, topDriver, secondDriver, thirdDriver) {
+            let analysis = `Your optimization profile shows ${topDriver[0]} as your primary driver (${topDriver[1]}%)`;
             
-            if (topDriver[1] - secondDriver[1] <= 10 && secondDriver[1] >= 25) {
-                analysis += `with strong secondary optimization for ${secondDriver[0]} (${secondDriver[1]}%). `;
-                analysis += `This combination creates a dynamic where you seek both ${topDriver[0].toLowerCase()} and ${secondDriver[0].toLowerCase()}, `;
-                analysis += `which can be mutually reinforcing or create interesting tensions to navigate.`;
+            if (topDriver[1] - secondDriver[1] <= 8 && secondDriver[1] >= 25) {
+                analysis += ` with an equally strong drive for ${secondDriver[0]} (${secondDriver[1]}%). `;
+                analysis += `This dual optimization creates a dynamic where you simultaneously seek ${getDriverDescription(topDriver[0])} and ${getDriverDescription(secondDriver[0])}, `;
+                analysis += `which can create both synergies and interesting tensions in your decision-making.`;
+            } else if (secondDriver[1] >= 25) {
+                analysis += ` with significant secondary optimization for ${secondDriver[0]} (${secondDriver[1]}%). `;
+                analysis += `While ${topDriver[0].toLowerCase()} is your primary motivator, ${secondDriver[0].toLowerCase()} plays an important supporting role in your life choices.`;
             } else {
-                analysis += `significantly outweighing other factors. `;
-                analysis += `While you show some optimization for ${secondDriver[0]} (${secondDriver[1]}%), `;
-                analysis += `your life choices are primarily guided by your drive for ${topDriver[0].toLowerCase()}.`;
+                analysis += `, significantly outweighing other factors. `;
+                analysis += `Your life choices are primarily guided by your drive for ${getDriverDescription(topDriver[0])}.`;
             }
 
-            if (lowestDriver[1] <= 10) {
-                analysis += ` You show minimal optimization for ${lowestDriver[0]} (${lowestDriver[1]}%), `;
-                analysis += `which suggests this is not a major factor in your decision-making process.`;
+            const lowestDriver = Object.entries(percentageScores).sort((a, b) => a[1] - b[1])[0];
+            if (lowestDriver[1] <= 12) {
+                analysis += ` You show minimal optimization for ${lowestDriver[0]} (${lowestDriver[1]}%), suggesting this is not a significant factor in your decision-making process.`;
             }
 
             return analysis;
@@ -842,7 +961,10 @@
                 Purpose: 'Meaning & Values'
             };
 
-            for (const [driver, score] of Object.entries(percentageScores)) {
+            // Sort drivers by score for better visualization
+            const sortedDrivers = Object.entries(percentageScores).sort((a, b) => b[1] - a[1]);
+
+            sortedDrivers.forEach(([driver, score]) => {
                 const driverDiv = document.createElement('div');
                 driverDiv.className = 'trait-bar';
                 
@@ -855,7 +977,76 @@
                 `;
                 
                 driversContainer.appendChild(driverDiv);
-            }
+            });
+        }
+
+        // Display Career Insights
+        function displayCareerInsights(archetypeData, percentageScores) {
+            const careerContainer = document.getElementById('career-content');
+            const careers = archetypeData.careers;
+            
+            careerContainer.innerHTML = `
+                <div class="career-section">
+                    <h4>🎯 Ideal Career Paths</h4>
+                    <ul>
+                        ${careers.ideal.map(career => `<li>${career}</li>`).join('')}
+                    </ul>
+                </div>
+                
+                <div class="career-section">
+                    <h4>🏢 Optimal Work Environment</h4>
+                    <ul>
+                        ${careers.workEnvironment.map(env => `<li>${env}</li>`).join('')}
+                    </ul>
+                </div>
+                
+                <div class="career-section">
+                    <h4>⚠️ Career Situations to Avoid</h4>
+                    <ul>
+                        ${careers.avoid.map(avoid => `<li>${avoid}</li>`).join('')}
+                    </ul>
+                </div>
+                
+                <div class="career-section">
+                    <h4>💡 Professional Development Focus</h4>
+                    <ul>
+                        ${generateDevelopmentTips(archetypeData, percentageScores).map(tip => `<li>${tip}</li>`).join('')}
+                    </ul>
+                </div>
+            `;
+        }
+
+        // Generate Development Tips
+        function generateDevelopmentTips(archetypeData, percentageScores) {
+            const sortedDrivers = Object.entries(percentageScores).sort((a, b) => b[1] - a[1]);
+            const topDriver = sortedDrivers[0][0];
+            const lowestDriver = sortedDrivers[4][0];
+            
+            const tips = [];
+            
+            // Tips based on top driver
+            const topDriverTips = {
+                Control: ["Seek roles with autonomy and decision-making authority", "Develop entrepreneurial skills"],
+                Growth: ["Pursue continuous learning opportunities", "Take on stretch assignments"],
+                Status: ["Build a strong professional brand", "Seek leadership development programs"],
+                Belonging: ["Develop strong networking and relationship skills", "Consider team leadership roles"],
+                Purpose: ["Align career with personal values", "Seek mission-driven organizations"]
+            };
+            
+            tips.push(...topDriverTips[topDriver]);
+            
+            // Development area based on lowest driver
+            const developmentAreas = {
+                Control: "Practice delegation and collaborative decision-making",
+                Growth: "Build patience for routine tasks and long-term consistency",
+                Status: "Develop intrinsic motivation beyond external recognition",
+                Belonging: "Strengthen individual contributor skills and self-reliance",
+                Purpose: "Balance idealism with practical business considerations"
+            };
+            
+            tips.push(developmentAreas[lowestDriver]);
+            
+            return tips;
         }
 
         // Display Recommendations
@@ -893,7 +1084,6 @@
         // Export Functions
         function downloadResults() {
             const results = window.assessmentResults;
-            const personalMessage = document.getElementById('personal-message').value;
             const timestamp = new Date().toLocaleString();
             const currentURL = window.location.href;
             const fileTimestamp = new Date().toISOString().slice(0, 19).replace(/[:-]/g, '').replace('T', '_');
@@ -950,6 +1140,17 @@
                         margin-top: 0;
                         font-size: 1.5em;
                     }
+                    .career-section {
+                        background: linear-gradient(135deg, #48bb78, #38a169);
+                        color: white;
+                        padding: 25px;
+                        border-radius: 15px;
+                        margin-bottom: 20px;
+                    }
+                    .career-section h3 {
+                        color: white;
+                        margin-bottom: 15px;
+                    }
                     .driver-item { 
                         display: flex; 
                         justify-content: space-between; 
@@ -996,13 +1197,6 @@
                         content: "⚠"; 
                         color: #e53e3e;
                     }
-                    .personal-message {
-                        background: linear-gradient(135deg, #667eea, #764ba2);
-                        color: white;
-                        padding: 20px;
-                        border-radius: 10px;
-                        margin: 20px 0;
-                    }
                     .footer { 
                         margin-top: 50px; 
                         padding-top: 20px; 
@@ -1035,30 +1229,32 @@
 
                 <div class="section">
                     <h2>Your Optimization Drivers</h2>
-                    <div class="driver-item">
-                        <span><strong>Control (Autonomy & Freedom):</strong></span>
-                        <span><strong>${results.percentageScores.Control}%</strong></span>
-                    </div>
-                    <div class="driver-item">
-                        <span><strong>Growth (Learning & Mastery):</strong></span>
-                        <span><strong>${results.percentageScores.Growth}%</strong></span>
-                    </div>
-                    <div class="driver-item">
-                        <span><strong>Status (Recognition & Achievement):</strong></span>
-                        <span><strong>${results.percentageScores.Status}%</strong></span>
-                    </div>
-                    <div class="driver-item">
-                        <span><strong>Belonging (Relationships & Community):</strong></span>
-                        <span><strong>${results.percentageScores.Belonging}%</strong></span>
-                    </div>
-                    <div class="driver-item">
-                        <span><strong>Purpose (Meaning & Values):</strong></span>
-                        <span><strong>${results.percentageScores.Purpose}%</strong></span>
-                    </div>
+                    ${Object.entries(results.percentageScores).sort((a, b) => b[1] - a[1]).map(([driver, score]) => `
+                        <div class="driver-item">
+                            <span><strong>${driver} (${getDriverFullDescription(driver)}):</strong></span>
+                            <span><strong>${score}%</strong></span>
+                        </div>
+                    `).join('')}
+                </div>
+
+                <div class="career-section">
+                    <h2 style="color: white;">🎯 Career & Professional Insights</h2>
+                    <h3>Ideal Career Paths</h3>
+                    <ul style="list-style: none; padding: 0;">
+                        ${results.careerInsights.ideal.map(career => `<li style="margin: 5px 0;">• ${career}</li>`).join('')}
+                    </ul>
+                    <h3>Optimal Work Environment</h3>
+                    <ul style="list-style: none; padding: 0;">
+                        ${results.careerInsights.workEnvironment.map(env => `<li style="margin: 5px 0;">• ${env}</li>`).join('')}
+                    </ul>
+                    <h3>Career Situations to Avoid</h3>
+                    <ul style="list-style: none; padding: 0;">
+                        ${results.careerInsights.avoid.map(avoid => `<li style="margin: 5px 0;">• ${avoid}</li>`).join('')}
+                    </ul>
                 </div>
 
                 <div class="section">
-                    <h2>Life & Career Insights</h2>
+                    <h2>Life & Development Insights</h2>
                     <div class="recommendations">
                         <div class="rec-column">
                             <h3>✓ Strengths & Opportunities</h3>
@@ -1075,13 +1271,6 @@
                     </div>
                 </div>
 
-                ${personalMessage ? `
-                <div class="personal-message">
-                    <h3>Personal Reflection</h3>
-                    <p>${personalMessage.replace(/\n/g, '<br>')}</p>
-                </div>
-                ` : ''}
-
                 <div class="footer">
                     <p><strong>Generated on:</strong> ${timestamp}</p>
                     <p><strong>Take your free OVM assessment:</strong> <a href="${currentURL}" target="_blank">${currentURL}</a></p>
@@ -1097,6 +1286,17 @@
             a.download = `ovm-assessment-${results.archetype.replace(/\s+/g, '-').toLowerCase()}-${fileTimestamp}.html`;
             a.click();
             window.URL.revokeObjectURL(url);
+        }
+
+        function getDriverFullDescription(driver) {
+            const descriptions = {
+                Control: 'Autonomy & Freedom',
+                Growth: 'Learning & Mastery',
+                Status: 'Recognition & Achievement',
+                Belonging: 'Relationships & Community',
+                Purpose: 'Meaning & Values'
+            };
+            return descriptions[driver];
         }
 
         function shareAsImage() {
@@ -1203,7 +1403,6 @@
         }
 
         function generateShareMessage(results, url) {
-            const personalMessage = document.getElementById('personal-message').value;
             const messages = [
                 `Just discovered I'm ${results.archetype}! 🎯 The OVM assessment revealed fascinating insights about what truly drives my decisions.`,
                 `My optimization profile shows I'm ${results.archetype}! 💫 Really eye-opening to understand my core motivational drivers.`,
@@ -1214,10 +1413,6 @@
             const randomMessage = messages[Math.floor(Math.random() * messages.length)];
             
             let shareText = `${randomMessage}\n\nDiscover what drives your life choices with the free OVM Assessment: ${url}\n\n#OVM #OptimizationVectors #PersonalityAssessment #Motivation #${results.archetype.replace(/\s+/g, '')}`;
-            
-            if (personalMessage && personalMessage.trim()) {
-                shareText += `\n\nMy reflection: "${personalMessage.trim()}"`;
-            }
             
             return shareText;
         }
@@ -1242,12 +1437,6 @@
                 Purpose: 0
             };
             
-            // Clear personal message
-            document.getElementById('personal-message').value = '';
-            
             // Show welcome screen
             showScreen('welcome-screen');
         }
-    </script>
-</body>
-</html>
