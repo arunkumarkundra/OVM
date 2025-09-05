@@ -309,6 +309,38 @@
             border-left: 3px solid rgba(255, 255, 255, 0.3);
         }
 
+        .scoring-explanation {
+            background: #e6fffa;
+            border: 1px solid #81e6d9;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .scoring-explanation h4 {
+            color: #2d3748;
+            margin-bottom: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+        }
+
+        .scoring-explanation .toggle {
+            margin-left: 10px;
+            font-size: 0.8em;
+        }
+
+        .scoring-explanation .content {
+            color: #4a5568;
+            font-size: 0.9em;
+            line-height: 1.5;
+            display: none;
+        }
+
+        .scoring-explanation .content.show {
+            display: block;
+        }
+
         .export-buttons {
             display: flex;
             justify-content: center;
@@ -429,6 +461,15 @@
                     <p id="archetype-description"></p>
                 </div>
 
+                <div class="scoring-explanation">
+                    <h4 onclick="toggleScoringInfo()">How to Read This Report <span class="toggle">▼</span></h4>
+                    <div class="content" id="scoring-content">
+                        <p><strong>Driver Scores:</strong> Each driver score shows how often you chose options linked to that driver out of the total times it was offered to you. 100% means you chose it every time it appeared.</p>
+                        <p><strong>Archetype Logic:</strong> <span id="archetype-logic"></span></p>
+                        <p><strong>Question Balance:</strong> <span id="balance-info"></span></p>
+                    </div>
+                </div>
+
                 <div class="result-section">
                     <h3>Optimization Vector Analysis</h3>
                     <p id="vector-analysis"></p>
@@ -475,32 +516,29 @@
     </div>
 
     <script>
-        // Improved OVM Questions (25 forced-choice pairs) - More precise and clearer distinctions
+        // Configuration Constants
+        const THRESHOLDS = {
+            DOMINANT_DELTA: 15,
+            DOMINANT_MIN: 60,
+            HYBRID_MIN: 45,
+            HYBRID_DELTA: 10,
+            BALANCED_RANGE: 12
+        };
+
+        // Opposing pairs for conflict detection
+        const OPPOSING_PAIRS = [
+            ['Status', 'Purpose'],
+            ['Control', 'Belonging'],
+            ['Growth', 'Purpose'] // contextual opposition
+        ];
+
+        // Balanced OVM Questions (25 forced-choice pairs) - Each driver appears exactly 10 times
         const questions = [
+            // Control vs Belonging (5 pairs)
             {
                 question: "When making major life decisions, what matters more:",
                 optionA: { text: "Having complete freedom to choose without external constraints", driver: "Control" },
-                optionB: { text: "Being part of a close-knit community or family network", driver: "Belonging" }
-            },
-            {
-                question: "What would bring you more satisfaction:",
-                optionA: { text: "Being recognized as highly accomplished in your field", driver: "Status" },
-                optionB: { text: "Contributing to a cause that makes the world better", driver: "Purpose" }
-            },
-            {
-                question: "Which scenario appeals to you more:",
-                optionA: { text: "A life filled with new challenges and learning opportunities", driver: "Growth" },
-                optionB: { text: "A life with security, stability, and predictable outcomes", driver: "Control" }
-            },
-            {
-                question: "What drives you more strongly:",
-                optionA: { text: "Earning respect and admiration from peers", driver: "Status" },
-                optionB: { text: "Building warm, trusting relationships with others", driver: "Belonging" }
-            },
-            {
-                question: "Which is more important to you:",
-                optionA: { text: "Continuously expanding your skills and knowledge", driver: "Growth" },
-                optionB: { text: "Living according to your deeply held values and beliefs", driver: "Purpose" }
+                optionB: { text: "Being part of a trusted community or close relationships", driver: "Belonging" }
             },
             {
                 question: "What would feel worse to you:",
@@ -508,29 +546,31 @@
                 optionB: { text: "Feeling isolated or disconnected from your social circle", driver: "Belonging" }
             },
             {
-                question: "Which achievement would mean more:",
-                optionA: { text: "Winning a prestigious award or public recognition", driver: "Status" },
-                optionB: { text: "Knowing your work serves a meaningful, higher purpose", driver: "Purpose" }
-            },
-            {
-                question: "What motivates you more:",
-                optionA: { text: "Taking on projects that stretch your capabilities", driver: "Growth" },
-                optionB: { text: "Having full autonomy over your work and decisions", driver: "Control" }
-            },
-            {
-                question: "Which matters more in your professional life:",
-                optionA: { text: "Being seen as a leader or high performer", driver: "Status" },
-                optionB: { text: "Having colleagues you genuinely care about and trust", driver: "Belonging" }
-            },
-            {
-                question: "What would you choose:",
-                optionA: { text: "A role that constantly challenges you to learn new things", driver: "Growth" },
-                optionB: { text: "A role that aligns perfectly with your personal mission", driver: "Purpose" }
-            },
-            {
                 question: "Which statement resonates more with you:",
                 optionA: { text: "I need the freedom to make my own choices", driver: "Control" },
                 optionB: { text: "I need to feel accepted and valued by my community", driver: "Belonging" }
+            },
+            {
+                question: "What motivates you most:",
+                optionA: { text: "Protecting my independence at all costs", driver: "Control" },
+                optionB: { text: "Staying deeply connected to people I care about", driver: "Belonging" }
+            },
+            {
+                question: "In your ideal life, what matters most:",
+                optionA: { text: "Being able to live completely on your own terms", driver: "Control" },
+                optionB: { text: "Feeling deeply connected to those you care about most", driver: "Belonging" }
+            },
+
+            // Status vs Purpose (5 pairs)
+            {
+                question: "What would bring you more satisfaction:",
+                optionA: { text: "Being recognized as highly accomplished in your field", driver: "Status" },
+                optionB: { text: "Contributing to a cause that makes the world better", driver: "Purpose" }
+            },
+            {
+                question: "Which achievement would mean more:",
+                optionA: { text: "Winning a prestigious award or public recognition", driver: "Status" },
+                optionB: { text: "Knowing your work serves a meaningful, higher purpose", driver: "Purpose" }
             },
             {
                 question: "What brings you more fulfillment:",
@@ -538,54 +578,31 @@
                 optionB: { text: "Making sacrifices for something you believe in", driver: "Purpose" }
             },
             {
-                question: "Which work environment suits you better:",
-                optionA: { text: "Dynamic environments with constant change and innovation", driver: "Growth" },
-                optionB: { text: "Stable environments where you can work independently", driver: "Control" }
-            },
-            {
-                question: "What's more important in your career:",
-                optionA: { text: "Climbing to positions of influence and prestige", driver: "Status" },
-                optionB: { text: "Working alongside people who feel like family", driver: "Belonging" }
-            },
-            {
-                question: "Which approach to life appeals to you more:",
-                optionA: { text: "Constantly seeking new experiences and personal development", driver: "Growth" },
-                optionB: { text: "Dedicating yourself to serving others or a greater cause", driver: "Purpose" }
-            },
-            {
-                question: "In your ideal life, what matters most:",
-                optionA: { text: "Being able to live completely on your own terms", driver: "Control" },
-                optionB: { text: "Being distinguished for your achievements and success", driver: "Status" }
-            },
-            {
-                question: "What would you prioritize:",
-                optionA: { text: "Building strong bonds with family and close friends", driver: "Belonging" },
-                optionB: { text: "Pursuing mastery and expertise in areas that fascinate you", driver: "Growth" }
-            },
-            {
-                question: "Which scenario would you prefer:",
-                optionA: { text: "Complete independence, even if it means more uncertainty", driver: "Control" },
-                optionB: { text: "A life dedicated to values and principles that guide you", driver: "Purpose" }
-            },
-            {
-                question: "What drives your ambition more:",
-                optionA: { text: "The desire to be exceptional and stand out from others", driver: "Status" },
-                optionB: { text: "The excitement of tackling complex, challenging problems", driver: "Growth" }
-            },
-            {
-                question: "Which is more central to your identity:",
-                optionA: { text: "The relationships and community connections you've built", driver: "Belonging" },
-                optionB: { text: "The principles and ideals you stand for", driver: "Purpose" }
-            },
-            {
-                question: "What would make you feel most successful:",
-                optionA: { text: "Having complete control over your life's direction", driver: "Control" },
-                optionB: { text: "Feeling deeply connected to those you care about most", driver: "Belonging" }
+                question: "What motivates you most:",
+                optionA: { text: "Being honored for my achievements", driver: "Status" },
+                optionB: { text: "Staying faithful to my deepest principles", driver: "Purpose" }
             },
             {
                 question: "Which type of recognition matters more:",
                 optionA: { text: "Public acknowledgment of your superior achievements", driver: "Status" },
                 optionB: { text: "Knowing you've stayed true to your moral compass", driver: "Purpose" }
+            },
+
+            // Growth vs Control (5 pairs)
+            {
+                question: "Which scenario appeals to you more:",
+                optionA: { text: "A life filled with new challenges and learning opportunities", driver: "Growth" },
+                optionB: { text: "A life with security, stability, and predictable outcomes", driver: "Control" }
+            },
+            {
+                question: "What motivates you more:",
+                optionA: { text: "Taking on projects that stretch your capabilities", driver: "Growth" },
+                optionB: { text: "Having full autonomy over your work and decisions", driver: "Control" }
+            },
+            {
+                question: "Which work environment suits you better:",
+                optionA: { text: "Dynamic environments with constant change and innovation", driver: "Growth" },
+                optionB: { text: "Stable environments where you can work independently", driver: "Control" }
             },
             {
                 question: "What energizes you more:",
@@ -593,9 +610,58 @@
                 optionB: { text: "Having the power to make decisions without interference", driver: "Control" }
             },
             {
+                question: "Which scenario would you prefer:",
+                optionA: { text: "Complete independence, even if it means more uncertainty", driver: "Control" },
+                optionB: { text: "Embracing uncertainty to grow and explore", driver: "Growth" }
+            },
+
+            // Status vs Belonging (5 pairs)
+            {
+                question: "What drives you more strongly:",
+                optionA: { text: "Earning respect and admiration from peers", driver: "Status" },
+                optionB: { text: "Building warm, trusting relationships with others", driver: "Belonging" }
+            },
+            {
+                question: "Which matters more in your professional life:",
+                optionA: { text: "Being seen as a leader or high performer", driver: "Status" },
+                optionB: { text: "Having colleagues you genuinely care about and trust", driver: "Belonging" }
+            },
+            {
+                question: "What's more important in your career:",
+                optionA: { text: "Climbing to positions of influence and prestige", driver: "Status" },
+                optionB: { text: "Working alongside people who feel like trusted community", driver: "Belonging" }
+            },
+            {
+                question: "What motivates you most:",
+                optionA: { text: "Earning admiration from others", driver: "Status" },
+                optionB: { text: "Being accepted and cared for as I am", driver: "Belonging" }
+            },
+            {
                 question: "In your professional relationships, what's more important:",
                 optionA: { text: "Being respected as someone who achieves results", driver: "Status" },
                 optionB: { text: "Being trusted as someone who genuinely cares", driver: "Belonging" }
+            },
+
+            // Growth vs Purpose (5 pairs)
+            {
+                question: "Which is more important to you:",
+                optionA: { text: "Continuously expanding your skills and knowledge", driver: "Growth" },
+                optionB: { text: "Living according to your deeply held values and beliefs", driver: "Purpose" }
+            },
+            {
+                question: "What would you choose:",
+                optionA: { text: "A role that constantly challenges you to learn new things", driver: "Growth" },
+                optionB: { text: "A role that aligns perfectly with your personal mission", driver: "Purpose" }
+            },
+            {
+                question: "Which approach to life appeals to you more:",
+                optionA: { text: "Constantly seeking new experiences and personal development", driver: "Growth" },
+                optionB: { text: "Dedicating yourself to serving others or a greater cause", driver: "Purpose" }
+            },
+            {
+                question: "What motivates you most:",
+                optionA: { text: "Advancing knowledge and discovery", driver: "Growth" },
+                optionB: { text: "Living a life of devotion and service", driver: "Purpose" }
             },
             {
                 question: "What legacy would you prefer to leave:",
@@ -739,32 +805,61 @@
             Belonging: 0,
             Purpose: 0
         };
+        let shuffledQuestions = [];
+        let appearanceCount = {};
+
+        // Initialize assessment
+        function initializeAssessment() {
+            // Calculate appearance count for each driver
+            appearanceCount = { Control: 0, Growth: 0, Status: 0, Belonging: 0, Purpose: 0 };
+            questions.forEach(q => {
+                appearanceCount[q.optionA.driver]++;
+                appearanceCount[q.optionB.driver]++;
+            });
+
+            // Verify balanced question set
+            const targetAppearance = Math.round((questions.length * 2) / 5);
+            const balanceCheck = Object.values(appearanceCount).every(count => count === targetAppearance);
+            
+            if (!balanceCheck) {
+                console.warn('Question set is not balanced:', appearanceCount);
+            }
+
+            // Shuffle questions for randomization
+            shuffledQuestions = [...questions].sort(() => Math.random() - 0.5);
+        }
 
         // Start Assessment
         function startAssessment() {
+            initializeAssessment();
             showScreen('question-screen');
             displayQuestion();
         }
 
         // Display Current Question
         function displayQuestion() {
-            const question = questions[currentQuestion];
+            const question = shuffledQuestions[currentQuestion];
             document.getElementById('question-text').textContent = question.question;
-            document.getElementById('progress-text').textContent = `Question ${currentQuestion + 1} of ${questions.length}`;
+            document.getElementById('progress-text').textContent = `Question ${currentQuestion + 1} of ${shuffledQuestions.length}`;
             
             // Update progress bar
-            const progress = ((currentQuestion + 1) / questions.length) * 100;
+            const progress = ((currentQuestion + 1) / shuffledQuestions.length) * 100;
             document.getElementById('progress-bar').style.width = progress + '%';
 
-            // Create options
+            // Create options with randomized A/B order
             const optionsContainer = document.getElementById('options-container');
             optionsContainer.innerHTML = '';
 
-            const optionA = createOption('A', question.optionA);
-            const optionB = createOption('B', question.optionB);
+            // Randomly swap option order (50/50)
+            const shouldSwap = Math.random() < 0.5;
+            const firstOption = shouldSwap ? question.optionB : question.optionA;
+            const secondOption = shouldSwap ? question.optionA : question.optionB;
+
+            const option1 = createOption('1', firstOption);
+            const option2 = createOption('2', secondOption);
             
-            optionsContainer.appendChild(optionA);
-            optionsContainer.appendChild(optionB);
+            optionsContainer.appendChild(option1);
+            optionsContainer.appendChild(option2);
         }
 
         // Create Option Element
@@ -785,7 +880,7 @@
             currentQuestion++;
 
             // Move to next question or show results
-            if (currentQuestion < questions.length) {
+            if (currentQuestion < shuffledQuestions.length) {
                 setTimeout(() => displayQuestion(), 300);
             } else {
                 setTimeout(() => showResults(), 500);
@@ -799,57 +894,78 @@
             animateResults();
         }
 
-        // Improved algorithm for calculating final results
+        // Calculate Final Results with Enhanced Algorithm
         function calculateResults() {
-            // Convert scores to percentages
-            const totalQuestions = questions.length;
-            const percentageScores = {};
+            // Calculate correct percentages using appearance count
+            const absolutePercentages = {};
             for (const [driver, score] of Object.entries(scores)) {
-                percentageScores[driver] = Math.round((score / totalQuestions) * 100);
+                absolutePercentages[driver] = Math.round((score / appearanceCount[driver]) * 100);
             }
 
             // Determine archetype with improved logic
-            const sortedDrivers = Object.entries(percentageScores).sort((a, b) => b[1] - a[1]);
+            const sortedDrivers = Object.entries(absolutePercentages).sort((a, b) => b[1] - a[1]);
             const topDriver = sortedDrivers[0];
             const secondDriver = sortedDrivers[1];
-            const thirdDriver = sortedDrivers[2];
 
             let archetype;
+            let archetypeLogic = "";
             let isHybrid = false;
+            let isConflict = false;
 
-            // Check for true hybrid (two drivers within 8% and both above 25%)
-            if (topDriver[1] - secondDriver[1] <= 8 && topDriver[1] >= 25 && secondDriver[1] >= 25) {
+            // Check for conflict first
+            const conflictPair = OPPOSING_PAIRS.find(pair => 
+                (pair.includes(topDriver[0]) && pair.includes(secondDriver[0])) &&
+                topDriver[1] >= 50 && secondDriver[1] >= 50
+            );
+
+            if (conflictPair) {
+                isConflict = true;
+                archetype = topDriver[0] + '+' + secondDriver[0];
+                archetypeLogic = `Conflict profile detected: High scores in opposing drivers ${topDriver[0]} (${topDriver[1]}%) and ${secondDriver[0]} (${secondDriver[1]}%)`;
+            }
+            // Check for hybrid
+            else if (topDriver[1] >= THRESHOLDS.HYBRID_MIN && 
+                     secondDriver[1] >= THRESHOLDS.HYBRID_MIN && 
+                     (topDriver[1] - secondDriver[1]) <= THRESHOLDS.HYBRID_DELTA) {
                 const hybridKey = [topDriver[0], secondDriver[0]].sort().join('+');
                 if (archetypes[hybridKey]) {
                     archetype = hybridKey;
                     isHybrid = true;
+                    archetypeLogic = `Hybrid archetype: ${topDriver[0]} (${topDriver[1]}%) and ${secondDriver[0]} (${secondDriver[1]}%) within ${THRESHOLDS.HYBRID_DELTA}% of each other`;
                 } else {
-                    // If hybrid doesn't exist, create dynamic hybrid description
                     archetype = topDriver[0] + '+' + secondDriver[0];
                     isHybrid = true;
+                    archetypeLogic = `Dynamic hybrid: ${topDriver[0]} (${topDriver[1]}%) and ${secondDriver[0]} (${secondDriver[1]}%) are co-dominant`;
                 }
-            } 
-            // Check for balanced profile (all within 15% range)
+            }
+            // Check for balanced
             else {
-                const maxScore = Math.max(...Object.values(percentageScores));
-                const minScore = Math.min(...Object.values(percentageScores));
-                if (maxScore - minScore <= 15) {
+                const maxScore = Math.max(...Object.values(absolutePercentages));
+                const minScore = Math.min(...Object.values(absolutePercentages));
+                if (maxScore - minScore <= THRESHOLDS.BALANCED_RANGE) {
                     archetype = "Balanced";
-                } else {
-                    // Single dominant archetype
+                    archetypeLogic = `Balanced profile: All drivers within ${THRESHOLDS.BALANCED_RANGE}% range (${minScore}%-${maxScore}%)`;
+                }
+                // Check for dominant
+                else if (topDriver[1] >= THRESHOLDS.DOMINANT_MIN && 
+                         (topDriver[1] - secondDriver[1]) >= THRESHOLDS.DOMINANT_DELTA) {
                     archetype = topDriver[0];
+                    archetypeLogic = `Dominant archetype: ${topDriver[0]} (${topDriver[1]}%) is ${topDriver[1] - secondDriver[1]}% higher than second driver`;
+                }
+                // Default to single archetype
+                else {
+                    archetype = topDriver[0];
+                    archetypeLogic = `Primary archetype: ${topDriver[0]} (${topDriver[1]}%) is your leading driver`;
                 }
             }
 
-            // Handle dynamic hybrid creation if archetype doesn't exist
+            // Handle archetype data
             let archetypeData;
             if (archetypes[archetype]) {
                 archetypeData = archetypes[archetype];
-            } else if (isHybrid) {
-                // Create dynamic hybrid
-                archetypeData = createDynamicHybrid(topDriver[0], secondDriver[0]);
+            } else if (isHybrid || isConflict) {
+                archetypeData = createDynamicHybrid(topDriver[0], secondDriver[0], isConflict);
             } else {
-                // Fallback to top driver
                 archetypeData = archetypes[topDriver[0]];
             }
 
@@ -857,14 +973,19 @@
             document.getElementById('archetype-type').textContent = archetypeData.name;
             document.getElementById('archetype-description').textContent = archetypeData.description;
             
+            // Display scoring information
+            document.getElementById('archetype-logic').textContent = archetypeLogic;
+            const balanceInfo = `Each driver appeared ${Object.values(appearanceCount)[0]} times. ${Object.entries(appearanceCount).map(([driver, count]) => `${driver}: ${count}`).join(', ')}`;
+            document.getElementById('balance-info').textContent = balanceInfo;
+            
             // Generate analysis
-            generateVectorAnalysis(percentageScores, archetype, topDriver, secondDriver, thirdDriver);
+            generateVectorAnalysis(absolutePercentages, archetype, topDriver, secondDriver);
             
             // Display optimization drivers
-            displayOptimizationDrivers(percentageScores);
+            displayOptimizationDrivers(absolutePercentages);
             
             // Display career insights
-            displayCareerInsights(archetypeData, percentageScores);
+            displayCareerInsights(archetypeData, absolutePercentages);
             
             // Display recommendations
             displayRecommendations(archetypeData);
@@ -873,8 +994,9 @@
             window.assessmentResults = {
                 archetype: archetypeData.name,
                 archetypeDescription: archetypeData.description,
-                percentageScores,
-                vectorAnalysis: generateVectorAnalysisText(percentageScores, archetype, topDriver, secondDriver, thirdDriver),
+                absolutePercentages,
+                archetypeLogic,
+                vectorAnalysis: generateVectorAnalysisText(absolutePercentages, archetype, topDriver, secondDriver),
                 strengths: archetypeData.strengths,
                 blindSpots: archetypeData.blindSpots,
                 careerInsights: archetypeData.careers
@@ -882,7 +1004,7 @@
         }
 
         // Create dynamic hybrid archetype
-        function createDynamicHybrid(driver1, driver2) {
+        function createDynamicHybrid(driver1, driver2, isConflict = false) {
             const driverNames = {
                 Control: "Maverick",
                 Growth: "Explorer", 
@@ -894,9 +1016,17 @@
             const base1 = archetypes[driver1];
             const base2 = archetypes[driver2];
 
+            const hybridName = isConflict ? 
+                `The ${driverNames[driver1]}-${driverNames[driver2]} (Conflict)` :
+                `The ${driverNames[driver1]}-${driverNames[driver2]}`;
+
+            const hybridDescription = isConflict ?
+                `You experience internal tension between ${driver1.toLowerCase()} and ${driver2.toLowerCase()}. This creates a complex dynamic where you simultaneously seek ${getDriverDescription(driver1)} while also prioritizing ${getDriverDescription(driver2)}, which can create internal conflicts requiring careful balance.` :
+                `You optimize for both ${driver1.toLowerCase()} and ${driver2.toLowerCase()}. This creates a unique blend where you seek ${getDriverDescription(driver1)} while also prioritizing ${getDriverDescription(driver2)}.`;
+
             return {
-                name: `The ${driverNames[driver1]}-${driverNames[driver2]}`,
-                description: `You optimize for both ${driver1.toLowerCase()} and ${driver2.toLowerCase()}. This creates a unique blend where you seek ${getDriverDescription(driver1)} while also prioritizing ${getDriverDescription(driver2)}.`,
+                name: hybridName,
+                description: hybridDescription,
                 strengths: [...base1.strengths.slice(0, 3), ...base2.strengths.slice(0, 2)],
                 blindSpots: [...base1.blindSpots.slice(0, 3), ...base2.blindSpots.slice(0, 2)],
                 careers: {
@@ -919,20 +1049,20 @@
         }
 
         // Generate Vector Analysis
-        function generateVectorAnalysis(percentageScores, archetype, topDriver, secondDriver, thirdDriver) {
-            const analysis = generateVectorAnalysisText(percentageScores, archetype, topDriver, secondDriver, thirdDriver);
+        function generateVectorAnalysis(absolutePercentages, archetype, topDriver, secondDriver) {
+            const analysis = generateVectorAnalysisText(absolutePercentages, archetype, topDriver, secondDriver);
             document.getElementById('vector-analysis').textContent = analysis;
         }
 
         // Generate Vector Analysis Text
-        function generateVectorAnalysisText(percentageScores, archetype, topDriver, secondDriver, thirdDriver) {
+        function generateVectorAnalysisText(absolutePercentages, archetype, topDriver, secondDriver) {
             let analysis = `Your optimization profile shows ${topDriver[0]} as your primary driver (${topDriver[1]}%)`;
             
-            if (topDriver[1] - secondDriver[1] <= 8 && secondDriver[1] >= 25) {
+            if (topDriver[1] - secondDriver[1] <= THRESHOLDS.HYBRID_DELTA && secondDriver[1] >= THRESHOLDS.HYBRID_MIN) {
                 analysis += ` with an equally strong drive for ${secondDriver[0]} (${secondDriver[1]}%). `;
                 analysis += `This dual optimization creates a dynamic where you simultaneously seek ${getDriverDescription(topDriver[0])} and ${getDriverDescription(secondDriver[0])}, `;
                 analysis += `which can create both synergies and interesting tensions in your decision-making.`;
-            } else if (secondDriver[1] >= 25) {
+            } else if (secondDriver[1] >= 30) {
                 analysis += ` with significant secondary optimization for ${secondDriver[0]} (${secondDriver[1]}%). `;
                 analysis += `While ${topDriver[0].toLowerCase()} is your primary motivator, ${secondDriver[0].toLowerCase()} plays an important supporting role in your life choices.`;
             } else {
@@ -940,8 +1070,8 @@
                 analysis += `Your life choices are primarily guided by your drive for ${getDriverDescription(topDriver[0])}.`;
             }
 
-            const lowestDriver = Object.entries(percentageScores).sort((a, b) => a[1] - b[1])[0];
-            if (lowestDriver[1] <= 12) {
+            const lowestDriver = Object.entries(absolutePercentages).sort((a, b) => a[1] - b[1])[0];
+            if (lowestDriver[1] <= 20) {
                 analysis += ` You show minimal optimization for ${lowestDriver[0]} (${lowestDriver[1]}%), suggesting this is not a significant factor in your decision-making process.`;
             }
 
@@ -949,7 +1079,7 @@
         }
 
         // Display Optimization Drivers
-        function displayOptimizationDrivers(percentageScores) {
+        function displayOptimizationDrivers(absolutePercentages) {
             const driversContainer = document.getElementById('optimization-drivers');
             driversContainer.innerHTML = '';
 
@@ -962,7 +1092,7 @@
             };
 
             // Sort drivers by score for better visualization
-            const sortedDrivers = Object.entries(percentageScores).sort((a, b) => b[1] - a[1]);
+            const sortedDrivers = Object.entries(absolutePercentages).sort((a, b) => b[1] - a[1]);
 
             sortedDrivers.forEach(([driver, score]) => {
                 const driverDiv = document.createElement('div');
@@ -981,7 +1111,7 @@
         }
 
         // Display Career Insights
-        function displayCareerInsights(archetypeData, percentageScores) {
+        function displayCareerInsights(archetypeData, absolutePercentages) {
             const careerContainer = document.getElementById('career-content');
             const careers = archetypeData.careers;
             
@@ -1010,15 +1140,15 @@
                 <div class="career-section">
                     <h4>💡 Professional Development Focus</h4>
                     <ul>
-                        ${generateDevelopmentTips(archetypeData, percentageScores).map(tip => `<li>${tip}</li>`).join('')}
+                        ${generateDevelopmentTips(archetypeData, absolutePercentages).map(tip => `<li>${tip}</li>`).join('')}
                     </ul>
                 </div>
             `;
         }
 
         // Generate Development Tips
-        function generateDevelopmentTips(archetypeData, percentageScores) {
-            const sortedDrivers = Object.entries(percentageScores).sort((a, b) => b[1] - a[1]);
+        function generateDevelopmentTips(archetypeData, absolutePercentages) {
+            const sortedDrivers = Object.entries(absolutePercentages).sort((a, b) => b[1] - a[1]);
             const topDriver = sortedDrivers[0][0];
             const lowestDriver = sortedDrivers[4][0];
             
@@ -1068,6 +1198,19 @@
                 li.textContent = item;
                 blindSpotsContainer.appendChild(li);
             });
+        }
+
+        // Toggle scoring explanation
+        function toggleScoringInfo() {
+            const content = document.getElementById('scoring-content');
+            const toggle = document.querySelector('.toggle');
+            if (content.classList.contains('show')) {
+                content.classList.remove('show');
+                toggle.textContent = '▼';
+            } else {
+                content.classList.add('show');
+                toggle.textContent = '▲';
+            }
         }
 
         // Animate Results
@@ -1225,11 +1368,12 @@
                 <div class="section">
                     <h2>Optimization Vector Analysis</h2>
                     <p>${results.vectorAnalysis}</p>
+                    <p><strong>Classification Logic:</strong> ${results.archetypeLogic}</p>
                 </div>
 
                 <div class="section">
                     <h2>Your Optimization Drivers</h2>
-                    ${Object.entries(results.percentageScores).sort((a, b) => b[1] - a[1]).map(([driver, score]) => `
+                    ${Object.entries(results.absolutePercentages).sort((a, b) => b[1] - a[1]).map(([driver, score]) => `
                         <div class="driver-item">
                             <span><strong>${driver} (${getDriverFullDescription(driver)}):</strong></span>
                             <span><strong>${score}%</strong></span>
@@ -1436,10 +1580,54 @@
                 Belonging: 0,
                 Purpose: 0
             };
+            shuffledQuestions = [];
             
             // Show welcome screen
             showScreen('welcome-screen');
         }
+
+        // Debug function for testing (can be called from console)
+        function debugSimulateProfile(driverChoice, iterations = 25) {
+            console.log(`Simulating ${iterations} choices for ${driverChoice}:`);
+            
+            // Reset scores
+            const testScores = { Control: 0, Growth: 0, Status: 0, Belonging: 0, Purpose: 0 };
+            
+            // Count appearances
+            const testAppearanceCount = { Control: 0, Growth: 0, Status: 0, Belonging: 0, Purpose: 0 };
+            questions.forEach(q => {
+                testAppearanceCount[q.optionA.driver]++;
+                testAppearanceCount[q.optionB.driver]++;
+            });
+            
+            // Simulate choosing the target driver whenever it appears
+            questions.forEach(q => {
+                if (q.optionA.driver === driverChoice) {
+                    testScores[driverChoice]++;
+                } else if (q.optionB.driver === driverChoice) {
+                    testScores[driverChoice]++;
+                } else {
+                    // Choose randomly between the two options when target driver not present
+                    const randomChoice = Math.random() < 0.5 ? q.optionA.driver : q.optionB.driver;
+                    testScores[randomChoice]++;
+                }
+            });
+            
+            // Calculate percentages
+            const testPercentages = {};
+            for (const [driver, score] of Object.entries(testScores)) {
+                testPercentages[driver] = Math.round((score / testAppearanceCount[driver]) * 100);
+            }
+            
+            console.log('Appearance counts:', testAppearanceCount);
+            console.log('Raw scores:', testScores);
+            console.log('Percentages:', testPercentages);
+            
+            return testPercentages;
+        }
+
+        // Make debug function available globally
+        window.debugSimulateProfile = debugSimulateProfile;
     </script>
 </body>
 </html>
